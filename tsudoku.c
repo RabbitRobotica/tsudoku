@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <time.h>
  
 //#define DEBUG
  
@@ -24,20 +23,7 @@
  
 #define TESTA_BIT(NUM,BIT) (NUM & (1<<(BIT)))
  
-int resolvido[TAM][TAM]=
-{
-7,9,3,5,6,8,2,4,1,
-4,5,1,7,2,9,3,6,8,
-6,8,2,3,1,4,9,7,5,
-1,6,5,4,9,3,7,8,2,
-2,7,8,1,5,6,4,3,9,
-3,4,9,2,8,7,5,1,6,
-9,3,6,8,7,5,1,2,4,
-5,1,4,6,3,2,8,9,7,
-8,2,7,9,4,1,6,5,3,
-};
  
-static int resolvido_ok;
  
 int sudoku[TAM][TAM]=
 {
@@ -118,15 +104,15 @@ void MostraSudoku()
  
  
  
-int ResolveSudoku( int nivel, int x, int y, int val, int mostra )
+int ResolveSudoku( int nivel, int x, int y, int val )
 {
 	int i, j, k, m, mask;
 	int quad_i, quad_j;
- 
+	static int resolvido;
  
 	int melhor_x, melhor_y, melhor_mask, melhor_bits, bits;
  
-	if (resolvido_ok)
+	if (resolvido)
 	{
 		return 0;
 	}
@@ -143,7 +129,7 @@ int ResolveSudoku( int nivel, int x, int y, int val, int mostra )
 	getchar();
 	#endif
  
-	resolvido_ok=1;
+	resolvido=1;
 	melhor_bits=0;
 	melhor_x=-1;
  
@@ -155,7 +141,7 @@ int ResolveSudoku( int nivel, int x, int y, int val, int mostra )
 			if ( sudoku[i][j]==0 )
 			{
 				mask=0;
-				resolvido_ok=0;
+				resolvido=0;
 				//pesquisa linha
 				for ( k=0; k<TAM; k++ )
 				{
@@ -219,14 +205,13 @@ int ResolveSudoku( int nivel, int x, int y, int val, int mostra )
 	}
  
  
-	if (resolvido_ok)
+	if (resolvido)
 	{
-		if (mostra)//se eh para mostrar a solução...
-		{	
-			printf("SUDOKU RESOLVIDO: nivel=%d\n",nivel);
-			MostraSudoku();
-		//	getchar();
-		}
+ 
+		printf("SUDOKU RESOLVIDO: nivel=%d\n",nivel);
+		MostraSudoku();
+	//	getchar();
+ 
 		return 0;
  
 	}
@@ -237,7 +222,7 @@ int ResolveSudoku( int nivel, int x, int y, int val, int mostra )
 	{
 		if ( TESTA_BIT(melhor_mask,k)==0 )
 		{
-			ResolveSudoku(nivel+1,melhor_x,melhor_y,k,mostra);
+			ResolveSudoku(nivel+1,melhor_x,melhor_y,k);
 		}
 	}
  
@@ -254,82 +239,13 @@ int ResolveSudoku( int nivel, int x, int y, int val, int mostra )
 	return 1;
 }
  
-void GeraSudoku()
-{
-	int i, j, k, nivel;
-	char letra;
- 
- 
-	do
-	{
-		printf("Digite o nivel do sudoku: (0-infatil 1-facil 2-medio 3-dificil 4-louco)\n");
-		letra=getchar();
-		setbuf(stdin,0);
- 
- 
-	}while ( letra<'0'||letra>'4');
- 
-	switch (letra)
-	{
-		case '0': nivel=49; break;
-		case '1': nivel=40; break;
-		case '2': nivel=31; break;
-		case '3': nivel=25; break;
-		case '4': nivel=20; break;
-		default:nivel=31; break; 
-	}
- 
-	k=0;
- 
-	do
-	{
-		memset(sudoku,0,sizeof(int)*TAM*TAM);
- 
-		for (i=0;i<TAM;i++)
-		{
-			for (j=0;j<TAM;j++)
-			{
-				if ( rand() % 100 < nivel+k )
-				{
-					sudoku[i][j]=resolvido[i][j];
-				}
-			}
-		}
- 
-		k++;
- 
-	} while ( ResolveSudoku(0,0,0,0,0) );
- 
- 
-	printf("Gerado sudoku nivel (quanto mais baixo mais dificil)=%d\n",nivel+k-1);
- 
-	MostraSudoku();
-}
- 
 int main()
 {
  
  
-// 	MostraSudoku();
+	MostraSudoku();
  
-//	ResolveSudoku(0,0,0,0,1);
- 
-	char resp;
- 
-	srand(time(NULL));
- 
-	GeraSudoku();
- 
-	printf("Deseja ver a solucao? (SN)\n");
- 
-	resp=getch();
- 
- 
-	if (resp=='s'||resp=='S')
-	{
-		resolvido_ok=0;
-		ResolveSudoku(0,0,0,0,1);
-	}
+	ResolveSudoku(0,0,0,0);
  
  
 	return 0;
